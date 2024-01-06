@@ -100,7 +100,21 @@ impl Universe {
                 // print!("({}, {}): {}", x, y, count);
                 let index = self.get_index(x, y);
 
-                if self.cells[index] == Cell::Alive {
+                match self.cells[index] {
+                    Cell::Dead =>{
+                        // 对于死亡的细胞,3个存活的邻居使得这个细胞在下一帧复活
+                        match count {
+                            3 => {
+                                // println!("->1,");
+                                new_cells.push(Cell::Alive)
+                            }
+                            _ => {
+                                // println!("->0,");
+                                new_cells.push(Cell::Dead)
+                            }
+                        }
+                    },
+                    Cell::Alive => {
                     // 对于存活的细胞 2 | 3 个存活的邻居使得这个细胞在下一帧存活
                     match count {
                         2 | 3 => {
@@ -112,18 +126,7 @@ impl Universe {
                             new_cells.push(Cell::Dead)
                         }
                     }
-                } else {
-                    // 对于死亡的细胞,3个存活的邻居使得这个细胞在下一帧复活
-                    match count {
-                        3 => {
-                            // println!("->1,");
-                            new_cells.push(Cell::Alive)
-                        }
-                        _ => {
-                            // println!("->0,");
-                            new_cells.push(Cell::Dead)
-                        }
-                    }
+                    },
                 }
             }
         }
