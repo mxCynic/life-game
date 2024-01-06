@@ -7,10 +7,10 @@ use life_game::{Cell, Universe};
 
 fn main() {
     // 自定义的400个死亡细胞的宇宙
-    let test = vec![Cell::Dead; 400];
+    let test = vec![Cell::Dead; 900];
     let mut test_u = Universe {
-        width: 20,
-        height: 20,
+        width: 30,
+        height: 30,
         cells: test,
     };
 
@@ -31,7 +31,7 @@ fn main() {
 
     loop {
         print!("{}", test_u);
-        thread::sleep(Duration::from_millis(100));
+        thread::sleep(Duration::from_millis(50));
         process::Command::new("clear").status().unwrap();
         test_u.next_frame();
     }

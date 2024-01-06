@@ -1,14 +1,14 @@
 use std::fmt;
 
 // 将一个平面的细胞群抽象成一维的
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Cell {
     Dead = 0,
     Alive = 1,
 }
 
 // 整个图像由长宽和细胞组成
-#[derive(PartialEq, Clone)]
+#[derive(Clone)]
 pub struct Universe {
     pub width: i32,
     pub height: i32,
@@ -17,13 +17,13 @@ pub struct Universe {
 
 impl Cell {
     // 利用随机数随机生成细胞状态
-    fn init_cells(width: i32, height: i32) -> Vec<Cell> {
+    fn init_cells(width: i32, height: i32) -> Vec<Self> {
         let mut cells = Vec::new();
         for i in 0..(width * height) {
             if i % 5 == 0 {
-                cells.push(Cell::Alive);
+                cells.push(Self::Alive);
             } else {
-                cells.push(Cell::Dead);
+                cells.push(Self::Dead);
             }
         }
 
@@ -33,16 +33,16 @@ impl Cell {
 
 impl Universe {
     // 利用随机生成的细胞生成一个随机图像
-    pub fn init(x: i32, y: i32) -> Universe {
+    pub fn init(x: i32, y: i32) -> Self {
         let first_cells = Cell::init_cells(x, y);
-        Universe {
+        Self {
             width: x,
             height: y,
             cells: first_cells,
         }
     }
 
-    fn get_index(&self, x: i32, y: i32) -> usize {
+    const fn get_index(&self, x: i32, y: i32) -> usize {
         let result = y * self.width + x;
         result as usize
     }
@@ -51,8 +51,8 @@ impl Universe {
         let mut num: i32 = 0;
 
         // ngb_x&y 是相邻格子的坐标
-        for ngb_x in [x - 1, x, x + 1].iter() {
-            for ngb_y in [y - 1, y, y + 1].iter() {
+        for ngb_x in &[x - 1, x, x + 1] {
+            for ngb_y in &[y - 1, y, y + 1] {
                 if ngb_x == &x && ngb_y == &y {
                     continue;
                 }
@@ -65,12 +65,10 @@ impl Universe {
 
                 // print!("({}, {})", ngb_x, ngb_y);
 
-                match self.cells[index] {
-                    Cell::Alive => {
-                        // print!("add!");
-                        num += 1;
-                    }
-                    Cell::Dead => (),
+                match self.cells.get(index) {
+                    Some(Cell::Alive) => num += 1,
+                    Some(Cell::Dead) => (),
+                    None => todo!(),
                 }
             }
         }
@@ -100,33 +98,24 @@ impl Universe {
                 // print!("({}, {}): {}", x, y, count);
                 let index = self.get_index(x, y);
 
-                match self.cells[index] {
-                    Cell::Dead =>{
+                match self.cells.get(index) {
+                    Some(Cell::Dead) => {
                         // 对于死亡的细胞,3个存活的邻居使得这个细胞在下一帧复活
                         match count {
-                            3 => {
-                                // println!("->1,");
-                                new_cells.push(Cell::Alive)
-                            }
-                            _ => {
-                                // println!("->0,");
-                                new_cells.push(Cell::Dead)
-                            }
-                        }
-                    },
-                    Cell::Alive => {
-                    // 对于存活的细胞 2 | 3 个存活的邻居使得这个细胞在下一帧存活
-                    match count {
-                        2 | 3 => {
-                            // println!("->1,");
-                            new_cells.push(Cell::Alive)
-                        }
-                        _ => {
-                            // println!("->0,");
-                            new_cells.push(Cell::Dead)
+                            3 => new_cells.push(Cell::Alive),
+
+                            _ => new_cells.push(Cell::Dead),
                         }
                     }
-                    },
+                    Some(Cell::Alive) => {
+                        // 对于存活的细胞 2 | 3 个存活的邻居使得这个细胞在下一帧存活
+                        match count {
+                            2 | 3 => new_cells.push(Cell::Alive),
+
+                            _ => new_cells.push(Cell::Dead),
+                        }
+                    }
+                    None => todo!(),
                 }
             }
         }
